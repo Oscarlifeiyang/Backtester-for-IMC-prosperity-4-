@@ -1,0 +1,25 @@
+# Python/cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# OS/editor artifacts
+.DS_Store
+
+# Generated backtest outputs
+backtests/
+prosperity4bt/logs/
+*.log
+
+# Local archives and bulky generated artifacts
+*.zip
+*.png
+*.ipynb
+
+# Old local experiment outputs
+invest_expand_*.csv
+
+# Duplicate raw-data layout; keep r3/round3 for the backtester.
+r3/ROUND_3/
+r3/ROUND_3.zip
+

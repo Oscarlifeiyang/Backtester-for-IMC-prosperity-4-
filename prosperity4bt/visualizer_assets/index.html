@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>__TITLE__</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/app.js"></script>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div>
+        <small>Local Visualizer</small>
+        <h1 class="hero-title">Backtest Replay</h1>
+        <p class="hero-subtitle">Inspect price action, executed trades, profit and loss, and sandbox output from a single saved backtest log.</p>
+      </div>
+      <div>
+        <small>Source Log</small>
+        <div class="hero-log-name">__LOG_NAME__</div>
+      </div>
+    </section>
+
+    <section class="controls">
+      <div>
+        <label for="product-select">Product</label>
+        <select id="product-select"></select>
+      </div>
+      <div>
+        <label for="timestamp-slider">Timestamp Cursor</label>
+        <input id="timestamp-slider" type="range" min="0" max="0" value="0">
+        <div class="range-meta">
+          <span id="timestamp-label">Timestamp</span>
+          <span id="day-label">Day</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats" id="stats">
+      <article class="stat"><h2>Status</h2><strong>Loading...</strong></article>
+    </section>
+
+    <section class="layout">
+      <div class="stack">
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Price And Trade Chart</h2>
+              <p>Best bid, best ask, mid price, and executed trades for the selected product.</p>
+            </div>
+            <div class="panel-actions">
+              <button type="button" class="action-btn" data-chart-kind="price">Expand</button>
+            </div>
+          </div>
+          <div class="chart-shell">
+            <svg id="price-chart" viewBox="0 0 1100 380" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+          <div class="legend">
+            <span><i class="swatch swatch-blue"></i> Best bid</span>
+            <span><i class="swatch swatch-red"></i> Best ask</span>
+            <span><i class="swatch swatch-dark"></i> Mid price</span>
+            <span><span class="marker marker-submission-buy"></span> Submission buy</span>
+            <span><span class="marker marker-submission-sell"></span> Submission sell</span>
+            <span><span class="marker marker-market"></span> Market trade</span>
+            <span><i class="swatch swatch-warn"></i> Selected timestamp</span>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Profit And Loss</h2>
+              <p>Per-product profit and loss from the activity log for the same timestamp sequence.</p>
+            </div>
+            <div class="panel-actions">
+              <button type="button" class="action-btn" data-chart-kind="pnl">Expand</button>
+            </div>
+          </div>
+          <div class="chart-shell">
+            <svg id="pnl-chart" viewBox="0 0 1100 280" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Bid Ask Spread</h2>
+              <p>Best ask minus best bid for the selected product at each timestamp.</p>
+            </div>
+            <div class="panel-actions">
+              <button type="button" class="action-btn" data-chart-kind="spread">Expand</button>
+            </div>
+          </div>
+          <div class="chart-shell">
+            <svg id="spread-chart" viewBox="0 0 1100 280" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+          <div class="legend">
+            <span><i class="swatch swatch-spread"></i> Bid ask spread</span>
+            <span><i class="swatch swatch-warn"></i> Selected timestamp</span>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Position</h2>
+              <p>Derived net inventory for the selected product based on `SUBMISSION` fills over time.</p>
+            </div>
+            <div class="panel-actions">
+              <button type="button" class="action-btn" data-chart-kind="position">Expand</button>
+            </div>
+          </div>
+          <div class="chart-shell">
+            <svg id="position-chart" viewBox="0 0 1100 280" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Recent Trades</h2>
+              <p>Last executed trades for the selected product across the loaded log.</p>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Price</th>
+                  <th>Qty</th>
+                  <th>Type</th>
+                  <th>Buyer</th>
+                  <th>Seller</th>
+                </tr>
+              </thead>
+              <tbody id="recent-trades-body"></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+
+      <div class="stack">
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Selected Timestamp</h2>
+              <p>Price levels, PnL, and derived inventory at the current cursor position.</p>
+            </div>
+            <span class="pill" id="selected-pill">Timestamp</span>
+          </div>
+          <div class="detail-grid" id="detail-grid"></div>
+          <h3 class="section-title">Position At Timestamp</h3>
+          <div class="table-scroll table-short">
+            <table>
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Net Change</th>
+                  <th>Buy Qty</th>
+                  <th>Sell Qty</th>
+                </tr>
+              </thead>
+              <tbody id="timestamp-position-body"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Sandbox Log</h2>
+              <p>Warnings raised by the simulator at the selected timestamp.</p>
+            </div>
+            <span class="pill warn" id="sandbox-status">No warnings</span>
+          </div>
+          <pre id="sandbox-log"></pre>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Lambda Log</h2>
+              <p>Captured stdout emitted by your trader for the selected timestamp.</p>
+            </div>
+          </div>
+          <pre id="lambda-log"></pre>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div id="chart-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="true"></div>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-head">
+        <div>
+          <small>Expanded Chart</small>
+          <h2 id="modal-title">Chart</h2>
+          <p id="modal-subtitle" class="muted">Zoom in with buttons or trackpad, then scroll sideways to inspect the timeline.</p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="action-btn secondary" id="modal-reset">Reset View</button>
+          <button type="button" class="action-btn" id="modal-download">Download SVG</button>
+          <button type="button" class="action-btn secondary" data-close-modal="true">Close</button>
+        </div>
+      </div>
+
+      <div class="modal-controls">
+        <div>
+          <label>Zoom</label>
+          <div class="zoom-controls">
+            <button type="button" class="action-btn secondary zoom-btn" id="modal-zoom-out" aria-label="Zoom out">-</button>
+            <span class="pill" id="modal-zoom-label">100%</span>
+            <button type="button" class="action-btn zoom-btn" id="modal-zoom-in" aria-label="Zoom in">+</button>
+          </div>
+        </div>
+        <div>
+          <div class="range-meta">
+            <span id="modal-focus-label">Centered on selected timestamp</span>
+            <span id="modal-window-size">Window size</span>
+          </div>
+          <p class="modal-hint">Use the trackpad, mouse wheel, or Shift + wheel to pan horizontally. Pinch or use Ctrl/Cmd + wheel to zoom.</p>
+        </div>
+      </div>
+
+      <div id="modal-chart-viewport" class="chart-shell chart-shell-large chart-shell-scroll">
+        <svg id="modal-chart" viewBox="0 0 1400 560" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
